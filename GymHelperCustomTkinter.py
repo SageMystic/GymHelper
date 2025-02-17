@@ -7,13 +7,39 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from docx import Document
 import os
-'''В общем, этот файл пока самая последняя версия. дальше нужно реализовать советы про ментальное здоровье и осанку. про менталку нужно задавать вопросы
-    как засыпаете, как просыпаетесь, что делаете перед сном и отталкиваясь от ответов приводить советы.'''
+import webbrowser  # Добавляем импорт модуля webbrowser
 
 class BlankField(Exception):
     """Исключение для пустых полей ввода."""
     def __init__(self, message='Обнаружены пустые строки или пункты, заполни их'):
         super(BlankField, self).__init__(message)
+
+class LinksWidget(ctk.CTkToplevel):
+    """Окно со ссылками на источники."""
+    def __init__(self):
+        super().__init__()
+        self.title("Ссылки на источники")
+        self.geometry("300x700")
+        self.layout = ctk.CTkScrollableFrame(self)
+        self.layout.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        self.link_database = [
+            ('https://lasalute.ru/blog/uprazhneniya/kardiotrenirovka/', 'Кардиотренировки'),
+            ('https://www.sports.ru/health/blogs/2820510.html', 'Советы по питанию'),
+            ('https://kurl.ru/BJvaY', 'Влияние сна на мышцы'),
+            ('https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2763382/', 'Сравнение различных диет'),
+            ('https://kurl.ru/cwYap', 'Мифы о жиросжигании'),
+            ('https://kurl.ru/rHvRk', 'Спортивные добавки и всё о них'),
+            ('https://kurl.ru/QGhJj', 'Влияние стресса на здоровье'),
+            ('https://pubmed.ncbi.nlm.nih.gov/30003901/', 'Всё о влиянии тренировок на потерю веса'),
+            ('https://habr.com/ru/articles/719252/', 'Что такое сон?'),
+            ('https://cgon.rospotrebnadzor.ru/naseleniyu/zdorovyy-obraz-zhizni/na-chto-vliyaet-osanka-cheloveka/', 'Правильная осанка для человека')
+        ]
+        
+        for link, label in self.link_database:
+            link_label = ctk.CTkLabel(self.layout, text=label, justify="center")
+            link_label.bind("<Button-1>", lambda event, url=link: webbrowser.open(url))
+            link_label.pack(pady=5)
 
 class GymHelper(ctk.CTk):
     def __init__(self):
@@ -32,7 +58,7 @@ class GymHelper(ctk.CTk):
                 ('Присед со штангой', 2), ('Сгибание/разгибание ног на тренажёре', 2),
                 ('Тяга верхнего блока', 3), ('Горизонтальная тяга блока', 3),
                 ('Поднятие штанги в наклоне', 3), ('Поднятие штанги на бицепс', 2),
-                ('Молотки с гантелями', 2), ('Поднятие гантели на бицепс со скручиванием', 2),
+                ('Молотки с гантелями', 2), ('Поднятие гантелей на бицепс со скручиванием', 2),
                 ('Опускание туловища на брусьях', 3), ('Разгибание верхнего блока с канатом', 3),
                 ('Жим лёжа', 3), ('Жим гантелей лёжа', 3), ('Махи гантелей', 2), ('Разведение рук', 2)
             ],
@@ -71,7 +97,7 @@ class GymHelper(ctk.CTk):
         page1.pack(fill="both", expand=True)
         page2.pack(fill="both", expand=True)
         page3.pack(fill="both", expand=True)
-        # Настройка UI для страниц
+        # Настраиваем UI для страниц
         self.page0_ui(page0)  # Начальная страница
         self.page1_ui(page1)  # Страница ввода данных
         self.page2_ui(page2)  # Страница тренировок
@@ -82,7 +108,7 @@ class GymHelper(ctk.CTk):
         page3.pack_forget()
 
     def page0_ui(self, page):
-        layout = ctk.CTkFrame(page, fg_color="#333333")  # окантовка
+        layout = ctk.CTkFrame(page, fg_color="#333333")  # Окантовка
         layout.pack(fill="both", expand=True, padx=20, pady=20)
 
         # Заголовок
@@ -107,8 +133,47 @@ class GymHelper(ctk.CTk):
         )
         body_button.pack(pady=10)
 
+        # Кнопка "Источники"
+        links_button = ctk.CTkButton(
+            layout, text="Источники", command=self.open_links_window
+        )
+        links_button.pack(pady=10)
+
+    def open_links_window(self):
+        LinksWidget()
+
     def improve_posture(self):
-        messagebox.showinfo("Информация", "Здесь будет информация о улучшении осанки.")
+        self.generate_posture_advice()
+
+    def generate_posture_advice(self):
+        """Генерирует файл с советами по правильной осанке."""
+        # Создание документа
+        doc = Document()
+        doc.add_heading("Советы по правильной осанке", level=1)
+
+        # Словарь с советами для правильной осанки
+        advice_dict = {
+            "Поза ребенка": "Встаньте на колени, соедините их вместе, опустите таз на пятки и медленно наклоняйтесь вперед, вытягивая руки перед собой. Лоб опустите на пол, расслабьте спину.",
+            "Супермен": "Лягте на живот, вытяните руки перед собой. На вдохе поднимите руки, грудь и ноги от пола, напрягая мышцы спины. Задержитесь на несколько секунд, затем плавно опуститесь.",
+            "Планка": "Примите положение упора лежа, как для отжиманий, но обопритесь на предплечья. Держите тело в прямой линии от головы до пяток, напрягая мышцы корпуса.",
+            "Мостик для ягодиц": "Лягте на спину, согните ноги в коленях, ступни поставьте на пол близко к ягодицам. Поднимите таз вверх, напрягая ягодицы и мышцы спины, затем медленно опуститесь.",
+            "Растяжка грудных мышц в дверном проеме": "Встаньте в дверном проеме, поставьте руки на уровень груди, согнув их в локтях под углом 90 градусов. Медленно наклоняйте корпус вперед, пока не почувствуете растяжение в груди.",
+            "Вращения плечами": "Встаньте прямо, руки опустите вдоль тела. Поднимайте плечи вверх, затем назад, вниз и вперед, выполняя круговые движения.",
+            "Вытяжение позвоночника сидя": "Сядьте на стул, выпрямите спину, положите одну руку на бедро, а другой рукой потянитесь вверх и немного в сторону. Повторите с другой рукой.",
+            "Круговые движения тазом": "Встаньте прямо, ноги на ширине плеч. Выполняйте медленные круговые движения тазом в одну сторону, затем в другую.",
+            "Тяга эластичной ленты": "Сядьте на пол, ноги вытяните вперед. Обмотайте эластичную ленту вокруг стопы, возьмитесь за концы ленты и тяните их на себя, сводя лопатки.",
+            "Наклоны головы": "Сядьте или встаньте прямо. Медленно наклоняйте голову вперед, стараясь подбородком коснуться груди, затем возвращайтесь в исходное положение."
+        }
+
+        # Добавление конкретных советов для правильной осанки
+        for exercise, description in advice_dict.items():
+            doc.add_heading(exercise, level=2)
+            doc.add_paragraph(description)
+
+        # Сохранение файла
+        file_path = os.path.join(os.getcwd(), "Советы по правильной осанке.docx")
+        doc.save(file_path)
+        messagebox.showinfo("Успех", f"Советы сохранены в файл: {file_path}")
 
     def improve_sleep(self):
         # Переход на страницу ментального здоровья
